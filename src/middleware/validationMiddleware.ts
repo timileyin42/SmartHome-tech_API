@@ -1,22 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
-import Joi from 'joi';
+import * as Joi from 'joi';
 
-// Define the schema for device validation
 const deviceSchema = Joi.object({
-    name: Joi.string().required(),
-    type: Joi.string().valid('light', 'camera', 'ac', 'tv').required(),
-    status: Joi.string().valid('on', 'off').required(),
+  name: Joi.string().required(),
+  type: Joi.string().required(),
 });
 
-// Middleware to validate the device data
+const controlDeviceStatusSchema = Joi.object({
+  status: Joi.string().valid('on', 'off').required(),
+});
+
 export const validateDevice = (req: Request, res: Response, next: NextFunction) => {
-    const { error } = deviceSchema.validate(req.body);
+  const { error } = deviceSchema.validate(req.body);
 
-    if (error) {
-        return res.status(400).json({ message: 'Validation failed', details: error.details });
-    }
+  if (error) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      details: error.details
+    });
+  }
 
-    next();
+  next();
 };
 
 // Define the schema for control device validation
@@ -28,7 +32,6 @@ const controlDeviceSchema = Joi.object({
     value: Joi.number().optional()
 });
 
-// Middleware to validate control device requests
 export const validateControlDevice = (req: Request, res: Response, next: NextFunction) => {
     const { error } = controlDeviceSchema.validate(req.body);
 
@@ -42,12 +45,20 @@ export const validateControlDevice = (req: Request, res: Response, next: NextFun
     next();
 };
 
-// Middleware to handle validation errors if any
-export const handleValidationErrors = (err: Error, req: Request, res: Response, next: NextFunction) => {
-    if (err) {
-        res.status(400).json({ message: 'Validation Error', error: err.message });
-    } else {
-        next();
-    }
+
+export const handleValidationErrors = (err: any, req: Request, res: Response, next: NextFunction) => {
+  // handle validation errors
 };
 
+export const validateControlDeviceStatus = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = controlDeviceStatusSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      details: error.details
+    });
+  }
+
+  next();
+};

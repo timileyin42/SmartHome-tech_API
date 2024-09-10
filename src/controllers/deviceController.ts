@@ -1,6 +1,12 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Device from '../models/Device';
 import { body, validationResult } from 'express-validator';
+import { Types } from 'mongoose';
+
+// Utility function to check if a string is a valid ObjectId
+const isValidObjectId = (id: string): boolean => {
+    return Types.ObjectId.isValid(id);
+};
 
 // Validation middleware for device operations
 export const validateDevice = [
@@ -16,91 +22,106 @@ export const validateDeviceUpdate = [
 ];
 
 // Helper function for handling validation errors
-export const handleValidationErrors = (req: Request, res: Response) => {
+export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+    next();
 };
 
-// CRUD operations with validation
+// Validation for controlling a device (only 'status' is required)
+export const validateDeviceControl = [
+    body('status').isIn(['on', 'off']).withMessage('Status must be either "on" or "off"'),
+];
 
-export const getDevices = async (req: Request, res: Response) => {
+// CRUD operations with error handling
+
+export const getDevices = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const devices = await Device.find();
         res.json(devices);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const getDevice = async (req: Request, res: Response) => {
+export const getDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findById(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
         }
         res.json(device);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const createDevice = async (req: Request, res: Response) => {
-  try {
-    await handleValidationErrors(req, res); // Assuming handleValidationErrors is an async function
-    const newDevice = new Device(req.body);
-    await newDevice.save();
-    res.status(201).json(newDevice);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-export const updateDevice = [
-    ...validateDeviceUpdate,
-    async (req: Request, res: Response) => {
-        handleValidationErrors(req, res);
-        try {
-            const device = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!device) {
-                return res.status(404).json({ message: 'Device not found' });
-            }
-            res.json(device);
-        } catch (error) {
-            res.status(500).json({ message: 'Server error' });
-        }
-    }
-];
-
-export const deleteDevice = async (req: Request, res: Response) => {
+export const createDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        handleValidationErrors(req, res, next);  // Handle validation
+        const newDevice = new Device(req.body);
+        await newDevice.save();
+        res.status(201).json(newDevice);
+    } catch (error) {
+        next(error); // Pass error to the error middleware
+    }
+};
+
+export const updateDevice = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        handleValidationErrors(req, res, next);  // Handle validation
+        const device = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+        res.json(device);
+    } catch (error) {
+        next(error); // Pass error to the error middleware
+    }
+};
+
+export const deleteDevice = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findByIdAndDelete(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
         }
         res.json({ message: 'Device deleted' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const controlDevice = async (req: Request, res: Response) => {
+export const controlDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findById(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
         }
-        device.status = req.body.status || device.status;
+        device.status = req.body.status;
         await device.save();
-        res.json(device);
+        res.json({ message: 'Device status updated', device });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const turnOnDevice = async (req: Request, res: Response) => {
+export const turnOnDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findById(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
@@ -109,12 +130,15 @@ export const turnOnDevice = async (req: Request, res: Response) => {
         await device.save();
         res.json({ message: 'Device turned on', device });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const turnOffDevice = async (req: Request, res: Response) => {
+export const turnOffDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findById(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
@@ -123,12 +147,15 @@ export const turnOffDevice = async (req: Request, res: Response) => {
         await device.save();
         res.json({ message: 'Device turned off', device });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 
-export const setDeviceState = async (req: Request, res: Response) => {
+export const setDeviceState = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid device ID format' });
+        }
         const device = await Device.findById(req.params.id);
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
@@ -138,7 +165,7 @@ export const setDeviceState = async (req: Request, res: Response) => {
         await device.save();
         res.json({ message: 'Device state updated', device });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        next(error); // Pass error to the error middleware
     }
 };
 

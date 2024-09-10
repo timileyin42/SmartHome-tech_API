@@ -4,6 +4,7 @@ import connectDB from './config';
 import deviceRoutes from './routes/deviceRoutes';
 import userRoutes from './routes/userRoutes'; // Import user routes for authentication
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
+import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
 
 // Load environment variables from .env file
 dotenv.config();
@@ -14,12 +15,14 @@ const app = express();
 app.use(express.json());
 
 // Connect to MongoDB
-connectDB().then(() => {
-    console.log('MongoDB connected successfully');
-}).catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
-});
+connectDB()
+    .then(() => {
+        console.log('MongoDB connected successfully');
+    })
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+        process.exit(1);
+    });
 
 // Middleware to log request details
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -28,15 +31,11 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 });
 
 // Define API routes
-// Apply authentication middleware only to routes that need it
-app.use('/api/devices', authenticateJWT, deviceRoutes);
-app.use('/api/users', userRoutes); // Public routes for registration and login
+app.use('/api/devices', authenticateJWT, deviceRoutes);  // Apply authentication to device routes
+app.use('/api/users', userRoutes);  // Public routes for registration and login
 
-// Global error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Global error occurred:', err.message);
-    res.status(500).json({ message: 'Internal Server Error', error: err.message });
-});
+// Use error middleware (global error handler)
+app.use(errorMiddleware);
 
 // Start script
 const PORT = process.env.PORT || 3000;
