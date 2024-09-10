@@ -4,6 +4,7 @@ import connectDB from './config';
 import deviceRoutes from './routes/deviceRoutes';
 import userRoutes from './routes/userRoutes'; // Import user routes for authentication
 import automationRoutes from './routes/automationRoutes'; // Import automation routes
+import cameraRoutes from './routes/cameraRoutes';
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
 import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
 
@@ -35,6 +36,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 app.use('/api/devices', authenticateJWT, deviceRoutes);  // Apply authentication to device routes
 app.use('/api/users', userRoutes);  // Public routes for registration and login
 app.use('/api/automation-rules', authenticateJWT, automationRoutes); // Add automation rules routes
+app.use('/api/devices/camera', cameraRoutes);
 
 // Use error middleware (global error handler)
 app.use(errorMiddleware);

@@ -37,6 +37,12 @@ const createAutomationRuleSchema = Joi.object({
   }).required()
 });
 
+const cameraControlSchema = Joi.object({
+  action: Joi.string().valid('on', 'off', 'record', 'snapshot').required(),
+  duration: Joi.number().optional(), // For 'record' action, this can specify the duration
+  status: Joi.string().optional(), // Make status optional
+});
+
 // Schema for updating automation rules
 const updateAutomationRuleSchema = Joi.object({
   name: Joi.string(),
@@ -82,6 +88,7 @@ export const validateControlDevice = (req: Request, res: Response, next: NextFun
 };
 
 export const validateControlDeviceStatus = (req: Request, res: Response, next: NextFunction) => {
+	console.log("validateControlDeviceStatus middleware invoked");
   const { error } = controlDeviceStatusSchema.validate(req.body);
 
   if (error) {
@@ -115,6 +122,21 @@ export const validateUpdateAutomationRule = (req: Request, res: Response, next: 
       details: error.details
     });
   }
+  next();
+};
+
+export const validateCameraControl = (req: Request, res: Response, next: NextFunction) => {
+	console.log("validateCameraControl middleware invoked");
+	console.log('req.body:', req.body);
+  const { error } = cameraControlSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
+
+  if (error) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      details: error.details,
+    });
+  }
+
   next();
 };
 
