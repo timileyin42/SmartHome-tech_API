@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes'; // Import user routes for authenti
 import automationRoutes from './routes/automationRoutes'; // Import automation routes
 import cameraRoutes from './routes/cameraRoutes';
 import tvRoutes from './routes/tvRoutes'; // Import TV routes
+import weatherRoutes from './routes/weatherRoutes';
 import smartDoorRoutes from './routes/smartDoorRoutes';
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
 import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
@@ -41,6 +42,7 @@ app.use('/api/automation-rules', authenticateJWT, automationRoutes); // Add auto
 app.use('/api/devices/camera', cameraRoutes);
 app.use('/api/tv', authenticateJWT, tvRoutes); // Add TV routes
 app.use('/api/smart-door', authenticateJWT, smartDoorRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // Use error middleware (global error handler)
 app.use(errorMiddleware);
