@@ -8,14 +8,17 @@ const deviceSchema = Joi.object({
 });
 
 const controlDeviceStatusSchema = Joi.object({
-  status: Joi.string().valid('on', 'off').required(),
+  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy').required(),
+  action: Joi.string().valid('lock', 'unlock', 'open', 'close').optional(), // Include valid actions for smart doors
+
 });
 
 // Schema for control device validation
 const controlDeviceSchema = Joi.object({
   name: Joi.string().required(),
   type: Joi.string().valid('light', 'ac').required(), // Adjust this based on your device types
-  status: Joi.string().valid('on', 'off').required(),
+  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy').required(),
+  action: Joi.string().valid('lock', 'unlock', 'open', 'close').optional(), // Include valid actions for smart doors
   command: Joi.string().valid('increase_temperature', 'decrease_temperature', 'moon_light').optional(),
   value: Joi.number().optional()
 });
@@ -66,6 +69,12 @@ const tvControlSchema = Joi.object({
   status: Joi.string().optional(), // Make status optional for TV
   volume: Joi.number().optional(), // For volume actions
   channel: Joi.string().optional() // For change channel action
+});
+
+// Schema for smart door control validation
+const smartDoorControlSchema = Joi.object({
+  status: Joi.string().valid('locked', 'unlocked', 'busy').required(),
+  action: Joi.string().valid('lock', 'unlock').required(),
 });
 
 // Middleware functions
@@ -154,6 +163,23 @@ export const validateTVControl = (req: Request, res: Response, next: NextFunctio
   console.log("validateTVControl middleware invoked");
   console.log('req.body:', req.body);
   const { error } = tvControlSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
+
+  if (error) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      details: error.details,
+    });
+  }
+
+  next();
+};
+
+// Middleware for validating smart door control requests
+export const validateSmartDoorControl = (req: Request, res: Response, next: NextFunction) => {
+  console.log("validateSmartDoorControl middleware invoked");
+  console.log('req.body:', req.body);
+
+  const { error } = smartDoorControlSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
 
   if (error) {
     return res.status(400).json({
