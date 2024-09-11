@@ -5,6 +5,7 @@ import deviceRoutes from './routes/deviceRoutes';
 import userRoutes from './routes/userRoutes'; // Import user routes for authentication
 import automationRoutes from './routes/automationRoutes'; // Import automation routes
 import cameraRoutes from './routes/cameraRoutes';
+import tvRoutes from './routes/tvRoutes'; // Import TV routes
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
 import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
 
@@ -37,6 +38,7 @@ app.use('/api/devices', authenticateJWT, deviceRoutes);  // Apply authentication
 app.use('/api/users', userRoutes);  // Public routes for registration and login
 app.use('/api/automation-rules', authenticateJWT, automationRoutes); // Add automation rules routes
 app.use('/api/devices/camera', cameraRoutes);
+app.use('/api/tv', authenticateJWT, tvRoutes); // Add TV routes
 
 // Use error middleware (global error handler)
 app.use(errorMiddleware);

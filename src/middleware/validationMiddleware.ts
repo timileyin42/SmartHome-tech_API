@@ -60,6 +60,14 @@ const updateAutomationRuleSchema = Joi.object({
   }).optional()
 });
 
+// Schema for TV control validation
+const tvControlSchema = Joi.object({
+  action: Joi.string().valid('on', 'off', 'volume_up', 'volume_down', 'change_channel').required(),
+  status: Joi.string().optional(), // Make status optional for TV
+  volume: Joi.number().optional(), // For volume actions
+  channel: Joi.string().optional() // For change channel action
+});
+
 // Middleware functions
 export const validateDevice = (req: Request, res: Response, next: NextFunction) => {
   const { error } = deviceSchema.validate(req.body);
@@ -88,7 +96,7 @@ export const validateControlDevice = (req: Request, res: Response, next: NextFun
 };
 
 export const validateControlDeviceStatus = (req: Request, res: Response, next: NextFunction) => {
-	console.log("validateControlDeviceStatus middleware invoked");
+  console.log("validateControlDeviceStatus middleware invoked");
   const { error } = controlDeviceStatusSchema.validate(req.body);
 
   if (error) {
@@ -126,9 +134,26 @@ export const validateUpdateAutomationRule = (req: Request, res: Response, next: 
 };
 
 export const validateCameraControl = (req: Request, res: Response, next: NextFunction) => {
-	console.log("validateCameraControl middleware invoked");
-	console.log('req.body:', req.body);
+  console.log("validateCameraControl middleware invoked");
+  console.log('req.body:', req.body);
+
   const { error } = cameraControlSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
+
+  if (error) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      details: error.details
+    });
+  }
+
+  next();
+};
+
+// Middleware for validating TV control requests
+export const validateTVControl = (req: Request, res: Response, next: NextFunction) => {
+  console.log("validateTVControl middleware invoked");
+  console.log('req.body:', req.body);
+  const { error } = tvControlSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
 
   if (error) {
     return res.status(400).json({
