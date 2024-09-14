@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import './SmartDoor.css'; // External CSS for styling
 
 // Define the expected response type
 interface DoorControlResponse {
@@ -7,14 +8,13 @@ interface DoorControlResponse {
 }
 
 const SmartDoor: React.FC = () => {
-  const [action, setAction] = useState<string>('lock');
   const [status, setStatus] = useState<string>('unlocked'); // Default status
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Function to handle the door action
-  const handleDoorAction = async () => {
+  const handleDoorAction = async (action: string) => {
     setLoading(true);
     setError(null);
     setResponseMessage(null);
@@ -32,6 +32,12 @@ const SmartDoor: React.FC = () => {
       );
 
       setResponseMessage(response.data.message || 'Action successful');
+
+      // Update status based on the action
+      if (action === 'lock') setStatus('locked');
+      else if (action === 'unlock') setStatus('unlocked');
+      else if (action === 'busy') setStatus('busy');
+
     } catch (err) {
       handleAxiosError(err, 'Failed to control the door.');
     } finally {
@@ -56,42 +62,38 @@ const SmartDoor: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Smart Door Control</h2>
+    <div className="smart-door-container">
+      <h2 className="title">Smart Door Control</h2>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {responseMessage && <p style={{ color: 'green' }}>{responseMessage}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {responseMessage && <p className="success-message">{responseMessage}</p>}
 
-      <div>
-        <label htmlFor="status">Status: </label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          disabled={loading} // Disable while loading
+      {/* Display current status */}
+      <p className="status-display">Current Door Status: <strong>{status}</strong></p>
+
+      <div className="grid-container">
+        <button
+          className="action-button"
+          onClick={() => handleDoorAction('lock')}
+          disabled={loading}
         >
-          <option value="unlocked">Unlocked</option>
-          <option value="locked">Locked</option>
-          <option value="busy">Busy</option>
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="action">Action: </label>
-        <select
-          id="action"
-          value={action}
-          onChange={(e) => setAction(e.target.value)}
-          disabled={loading} // Disable while loading
+          {loading ? 'Processing...' : 'Lock'}
+        </button>
+        <button
+          className="action-button"
+          onClick={() => handleDoorAction('unlock')}
+          disabled={loading}
         >
-          <option value="lock">Lock</option>
-          <option value="unlock">Unlock</option>
-        </select>
+          {loading ? 'Processing...' : 'Unlock'}
+        </button>
+        <button
+          className="action-button"
+          onClick={() => handleDoorAction('busy')}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : 'Busy'}
+        </button>
       </div>
-
-      <button onClick={handleDoorAction} disabled={loading}>
-        {loading ? 'Processing...' : 'Submit'}
-      </button>
     </div>
   );
 };

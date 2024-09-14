@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import './CameraControl.css'; // Import the CSS file for styling
 
 const CameraControl: React.FC = () => {
   const [action, setAction] = useState<string>('on');
@@ -29,51 +30,47 @@ const CameraControl: React.FC = () => {
     }
   };
 
-  // Error handling function
   const handleAxiosError = (err: unknown, defaultMessage: string) => {
     if (isAxiosError(err)) {
-      // Handle AxiosError type
       const axiosError = err as AxiosError;
       setError(axiosError.response?.data?.message || defaultMessage);
     } else if (err instanceof Error) {
-      // Handle generic errors
       setError(err.message || 'An unexpected error occurred.');
     } else {
-      // Handle unknown errors
       setError('An unknown error occurred.');
     }
     setResponseMessage(''); // Clear any previous success message
   };
 
-  // Type guard to check if error is AxiosError
   function isAxiosError(err: any): err is AxiosError {
     return err.isAxiosError === true;
   }
 
   return (
-    <div>
+    <div className="camera-control-container">
       <h2>Camera Control</h2>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {responseMessage && <p style={{ color: 'green' }}>{responseMessage}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {responseMessage && <p className="success-message">{responseMessage}</p>}
       {loading && <p>Processing...</p>}
 
-      <div>
-        <label htmlFor="action">Action: </label>
-        <select
-          id="action"
-          value={action}
-          onChange={(e) => setAction(e.target.value)}
-        >
-          <option value="on">Turn On</option>
-          <option value="off">Turn Off</option>
-          <option value="record">Record</option>
-          <option value="snapshot">Take Snapshot</option>
-        </select>
+      <div className="camera-control-grid">
+        <button className={`action-button ${action === 'on' ? 'active' : ''}`} onClick={() => setAction('on')}>
+          Turn On
+        </button>
+        <button className={`action-button ${action === 'off' ? 'active' : ''}`} onClick={() => setAction('off')}>
+          Turn Off
+        </button>
+        <button className={`action-button ${action === 'record' ? 'active' : ''}`} onClick={() => setAction('record')}>
+          Record
+        </button>
+        <button className={`action-button ${action === 'snapshot' ? 'active' : ''}`} onClick={() => setAction('snapshot')}>
+          Take Snapshot
+        </button>
       </div>
 
       {action === 'record' && (
-        <div>
+        <div className="duration-input">
           <label htmlFor="duration">Duration (in seconds): </label>
           <input
             id="duration"
@@ -84,7 +81,7 @@ const CameraControl: React.FC = () => {
         </div>
       )}
 
-      <button onClick={handleCameraAction} disabled={loading}>Submit</button>
+      <button className="submit-button" onClick={handleCameraAction} disabled={loading}>Submit</button>
     </div>
   );
 };

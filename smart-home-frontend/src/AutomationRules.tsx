@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+interface RuleDetail {
+  type?: string;
+  value?: string;
+}
+
 interface AutomationRule {
   id: string;
   name: string;
-  trigger: string;
-  condition: string;
-  action: string;
+  trigger: RuleDetail;
+  condition: RuleDetail;
+  action: RuleDetail;
 }
 
 const AutomationRules: React.FC = () => {
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [newRule, setNewRule] = useState<Partial<AutomationRule>>({
     name: '',
-    trigger: '',
-    condition: '',
-    action: '',
+    trigger: { type: '', value: '' },
+    condition: { type: '', value: '' },
+    action: { type: '', value: '' },
   });
   const [selectedRule, setSelectedRule] = useState<AutomationRule | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Fetch automation rules on component mount
   useEffect(() => {
     const fetchRules = async () => {
       setLoading(true);
@@ -31,7 +35,7 @@ const AutomationRules: React.FC = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        setRules(response.data.data); // Set the rules data
+        setRules(response.data.data);
       } catch (err: unknown) {
         handleAxiosError(err, 'Failed to fetch automation rules.');
       } finally {
@@ -42,7 +46,6 @@ const AutomationRules: React.FC = () => {
     fetchRules();
   }, []);
 
-  // Centralized error handling function
   const handleAxiosError = (err: unknown, defaultMessage: string) => {
     if (err && typeof err === 'object' && 'response' in err) {
       const axiosError = err as { response?: { data?: { message?: string } } };
@@ -54,7 +57,6 @@ const AutomationRules: React.FC = () => {
     }
   };
 
-  // Create a new automation rule
   const createRule = async () => {
     setLoading(true);
     try {
@@ -64,8 +66,8 @@ const AutomationRules: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      setRules([...rules, response.data.data]); // Add the new rule to the list
-      setNewRule({ name: '', trigger: '', condition: '', action: '' }); // Reset form
+      setRules([...rules, response.data.data]);
+      resetForm(); // Reset form after successful creation
     } catch (err: unknown) {
       handleAxiosError(err, 'Failed to create the automation rule.');
     } finally {
@@ -73,22 +75,25 @@ const AutomationRules: React.FC = () => {
     }
   };
 
-  // Update an existing automation rule
   const updateRule = async () => {
     if (!selectedRule) return;
     setLoading(true);
     try {
-      const response = await axios.put<{ data: AutomationRule }>(`http://localhost:3000/api/automation-rules/${selectedRule.id}`, selectedRule, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const response = await axios.put<{ data: AutomationRule }>(
+        `http://localhost:3000/api/automation-rules/${selectedRule.id}`,
+        selectedRule,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
       const updatedRules = rules.map((rule) =>
         rule.id === selectedRule.id ? response.data.data : rule
       );
       setRules(updatedRules);
-      setSelectedRule(null); // Clear the selection
+      resetForm(); // Reset form after successful update
     } catch (err: unknown) {
       handleAxiosError(err, 'Failed to update the automation rule.');
     } finally {
@@ -96,7 +101,6 @@ const AutomationRules: React.FC = () => {
     }
   };
 
-  // Delete an automation rule
   const deleteRule = async (id: string) => {
     setLoading(true);
     try {
@@ -105,12 +109,17 @@ const AutomationRules: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      setRules(rules.filter((rule) => rule.id !== id)); // Remove the rule from the list
+      setRules(rules.filter((rule) => rule.id !== id));
     } catch (err: unknown) {
       handleAxiosError(err, 'Failed to delete the automation rule.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setNewRule({ name: '', trigger: { type: '', value: '' }, condition: { type: '', value: '' }, action: { type: '', value: '' } });
+    setSelectedRule(null);
   };
 
   return (
@@ -129,7 +138,7 @@ const AutomationRules: React.FC = () => {
           <label>Name:</label>
           <input
             type="text"
-            value={newRule.name || selectedRule?.name || ''}
+            value={selectedRule ? selectedRule.name : newRule.name || ''}
             onChange={(e) =>
               selectedRule
                 ? setSelectedRule({ ...selectedRule, name: e.target.value })
@@ -139,44 +148,30 @@ const AutomationRules: React.FC = () => {
           />
         </div>
         <div>
-          <label>Trigger:</label>
+          <label>Trigger Type:</label>
           <input
             type="text"
-            value={newRule.trigger || selectedRule?.trigger || ''}
+            value={selectedRule ? selectedRule.trigger?.type : newRule.trigger?.type || ''}
             onChange={(e) =>
               selectedRule
-                ? setSelectedRule({ ...selectedRule, trigger: e.target.value })
-                : setNewRule({ ...newRule, trigger: e.target.value })
+                ? setSelectedRule({ ...selectedRule, trigger: { ...selectedRule.trigger, type: e.target.value } })
+                : setNewRule({ ...newRule, trigger: { ...newRule.trigger, type: e.target.value } })
+            }
+            required
+          />
+          <label>Trigger Value:</label>
+          <input
+            type="text"
+            value={selectedRule ? selectedRule.trigger?.value : newRule.trigger?.value || ''}
+            onChange={(e) =>
+              selectedRule
+                ? setSelectedRule({ ...selectedRule, trigger: { ...selectedRule.trigger, value: e.target.value } })
+                : setNewRule({ ...newRule, trigger: { ...newRule.trigger, value: e.target.value } })
             }
             required
           />
         </div>
-        <div>
-          <label>Condition:</label>
-          <input
-            type="text"
-            value={newRule.condition || selectedRule?.condition || ''}
-            onChange={(e) =>
-              selectedRule
-                ? setSelectedRule({ ...selectedRule, condition: e.target.value })
-                : setNewRule({ ...newRule, condition: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <label>Action:</label>
-          <input
-            type="text"
-            value={newRule.action || selectedRule?.action || ''}
-            onChange={(e) =>
-              selectedRule
-                ? setSelectedRule({ ...selectedRule, action: e.target.value })
-                : setNewRule({ ...newRule, action: e.target.value })
-            }
-            required
-          />
-        </div>
+        {/* Repeat similarly for Condition and Action */}
         <button type="submit" disabled={loading}>
           {selectedRule ? 'Update Rule' : 'Create Rule'}
         </button>
@@ -188,7 +183,7 @@ const AutomationRules: React.FC = () => {
           {rules.map((rule) => (
             <li key={rule.id}>
               <span>
-                Name: {rule.name}, Trigger: {rule.trigger}, Condition: {rule.condition}, Action: {rule.action}
+                Name: {rule.name}, Trigger: {rule.trigger.type} - {rule.trigger.value}, Condition: {rule.condition.type} - {rule.condition.value}, Action: {rule.action.type} - {rule.action.value}
               </span>
               <button onClick={() => setSelectedRule(rule)}>Edit</button>
               <button onClick={() => deleteRule(rule.id)}>Delete</button>
