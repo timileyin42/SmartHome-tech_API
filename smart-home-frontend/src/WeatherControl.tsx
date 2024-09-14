@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import './WeatherControl.css'; // Add a separate CSS file for styling
 
 // Define the response structure
 interface WeatherControlResponse {
@@ -55,7 +56,7 @@ const WeatherControl: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="weather-control-container">
       <h2>Weather Control</h2>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

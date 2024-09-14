@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import './TVControl.css'; // Add a CSS file for styling
 
 // Define the expected response type
 interface TVControlResponse {
@@ -62,30 +63,52 @@ const TVControl: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="tv-control-container">
       <h2>TV Control</h2>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {responseMessage && <p style={{ color: 'green' }}>{responseMessage}</p>}
 
-      <div>
-        <label htmlFor="action">Action: </label>
-        <select
-          id="action"
-          value={action}
-          onChange={(e) => setAction(e.target.value)}
-          disabled={loading} // Disable while loading
+      <div className="action-grid">
+        <button
+          className={`action-btn ${action === 'on' ? 'active' : ''}`}
+          onClick={() => setAction('on')}
+          disabled={loading}
         >
-          <option value="on">Turn On</option>
-          <option value="off">Turn Off</option>
-          <option value="volume_up">Volume Up</option>
-          <option value="volume_down">Volume Down</option>
-          <option value="change_channel">Change Channel</option>
-        </select>
+          Turn On
+        </button>
+        <button
+          className={`action-btn ${action === 'off' ? 'active' : ''}`}
+          onClick={() => setAction('off')}
+          disabled={loading}
+        >
+          Turn Off
+        </button>
+        <button
+          className={`action-btn ${action === 'volume_up' ? 'active' : ''}`}
+          onClick={() => setAction('volume_up')}
+          disabled={loading}
+        >
+          Volume Up
+        </button>
+        <button
+          className={`action-btn ${action === 'volume_down' ? 'active' : ''}`}
+          onClick={() => setAction('volume_down')}
+          disabled={loading}
+        >
+          Volume Down
+        </button>
+        <button
+          className={`action-btn ${action === 'change_channel' ? 'active' : ''}`}
+          onClick={() => setAction('change_channel')}
+          disabled={loading}
+        >
+          Change Channel
+        </button>
       </div>
 
       {(action === 'volume_up' || action === 'volume_down') && (
-        <div>
+        <div className="control-input">
           <label htmlFor="volume">Volume: </label>
           <input
             id="volume"
@@ -98,7 +121,7 @@ const TVControl: React.FC = () => {
       )}
 
       {action === 'change_channel' && (
-        <div>
+        <div className="control-input">
           <label htmlFor="channel">Channel: </label>
           <input
             id="channel"
@@ -110,7 +133,7 @@ const TVControl: React.FC = () => {
         </div>
       )}
 
-      <button onClick={handleTVAction} disabled={loading}>
+      <button className="submit-btn" onClick={handleTVAction} disabled={loading}>
         {loading ? 'Processing...' : 'Submit'}
       </button>
     </div>
