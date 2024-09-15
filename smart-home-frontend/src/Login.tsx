@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 // Define the expected response type for login
 interface LoginResponse {

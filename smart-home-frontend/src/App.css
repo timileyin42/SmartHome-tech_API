@@ -1,3 +1,5 @@
+/* App.css */
+
 /* General Styles */
 body {
   font-family: Arial, sans-serif;
@@ -6,11 +8,17 @@ body {
   padding: 0;
 }
 
+/* App Container Styles */
 .App {
   text-align: center;
+  background-image: url('../public/images/registerlogo.jpg'); /* Add your background image */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh; /* Ensure it covers the whole viewport height */
 }
 
-/* Header Styles */
+/* Other Styles */
 .App-header {
   background-color: #282c34;
   color: white;

@@ -1,8 +1,10 @@
+// App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import LandingPage from './LandingPage'; // Import the LandingPage component
+import Register from './Register';
 import Login from './Login';
 import Dashboard from './Dashboard';
-import Register from './Register';
 import AutomationRules from './AutomationRules';
 import DeviceControl from './DeviceControl';
 import SmartDoor from './SmartDoor';
@@ -20,7 +22,8 @@ const App: React.FC = () => {
       <div className="App">
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandingPage />} /> {/* Update to use LandingPage */}
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           {/* Protected Routes */}

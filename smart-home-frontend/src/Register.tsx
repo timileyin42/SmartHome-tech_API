@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 // Define the expected response type for registration
 interface RegisterResponse {
@@ -12,6 +13,8 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Function to handle form submission for registration
   const handleRegister = async (e: React.FormEvent) => {
@@ -32,6 +35,12 @@ const Register: React.FC = () => {
       setSuccessMessage(response.data.message || 'Registration successful');
       setUsername(''); // Clear the username field
       setPassword(''); // Clear the password field
+
+      // Redirect to login page after a 5-second delay
+      setTimeout(() => {
+        navigate('/login'); // Use navigate to redirect
+      }, 5000); // 5-second delay
+
     } catch (err) {
       handleAxiosError(err, 'Registration failed. Please try again.');
     } finally {

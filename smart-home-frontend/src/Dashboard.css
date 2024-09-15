@@ -1,8 +1,12 @@
 .dashboard {
   text-align: center;
-  background-color: #f5f7fa;
+  background-image: url('../public/images/templates_apps.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 20px;
   min-height: 100vh;
+  color: #fff;
 }
 
 h1 {
