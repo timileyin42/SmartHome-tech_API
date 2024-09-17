@@ -12,14 +12,18 @@ const CameraControl: React.FC = () => {
   const handleCameraAction = async () => {
     setLoading(true);
     try {
-      const response = await axios.post<{ message: string }>('http://localhost:3000/api/devices/camera/control', {
-        action,
-        duration: action === 'record' ? duration : undefined, // Only send duration for 'record' action
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Assuming token is stored in localStorage
+      const response = await axios.post<{ message: string }>(
+        'http://localhost:3000/api/camera/control', // Updated endpoint
+        {
+          action,
+          duration: action === 'record' ? duration : undefined, // Only send duration for 'record' action
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Assuming token is stored in localStorage
+          },
+        }
+      );
 
       setResponseMessage(response.data.message);
       setError(''); // Clear any previous errors
