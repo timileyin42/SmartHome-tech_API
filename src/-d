@@ -1,0 +1,3 @@
+{"message":"No token, authorization denied"}--_curl_--"name": "Smart Light"
+--_curl_-- "type": "light"
+--_curl_-- "status": "on"

@@ -55,7 +55,7 @@ app.use('/api/weather', weatherRoutes);
 app.use(errorMiddleware);
 
 // Start script
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 const startServer = () => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
@@ -64,4 +64,3 @@ const startServer = () => {
 
 // Run the server
 startServer();
-
