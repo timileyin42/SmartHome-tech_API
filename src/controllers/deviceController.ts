@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Device from '../models/Device';
 import { body, validationResult } from 'express-validator';
 import { Types } from 'mongoose';
+import { deviceActionsConfig } from '../deviceActionsConfig'; // Import the configuration
 
 // Utility function to check if a string is a valid ObjectId
 const isValidObjectId = (id: string): boolean => {
@@ -10,15 +11,14 @@ const isValidObjectId = (id: string): boolean => {
 
 // Validation middleware for device operations
 export const validateDevice = [
-    body('name').isString().notEmpty().withMessage('Name is required'),
     body('type').isString().notEmpty().withMessage('Type is required'),
-    body('status').isIn(['on', 'off']).withMessage('Status must be either "on" or "off"'),
+    body('status').optional().isIn(['on', 'off', 'locked', 'unlocked', 'busy']).withMessage('Status must be either "on", "off", "locked", "unlocked", or "busy"'),
 ];
 
 export const validateDeviceUpdate = [
     body('name').optional().isString().notEmpty().withMessage('Name must be a string if provided'),
     body('type').optional().isString().notEmpty().withMessage('Type must be a string if provided'),
-    body('status').optional().isIn(['on', 'off']).withMessage('Status must be either "on" or "off" if provided'),
+    body('status').optional().isIn(['on', 'off', 'locked', 'unlocked', 'busy']).withMessage('Status must be either "on", "off", "locked", "unlocked", or "busy" if provided'),
 ];
 
 // Helper function for handling validation errors
@@ -30,13 +30,9 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
     next();
 };
 
-// Validation for controlling a device (only 'status' is required)
-export const validateDeviceControl = [
-    body('status').isIn(['on', 'off']).withMessage('Status must be either "on" or "off"'),
-];
-
 // CRUD operations with error handling
 
+// Get all devices
 export const getDevices = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const devices = await Device.find();
@@ -46,6 +42,7 @@ export const getDevices = async (req: Request, res: Response, next: NextFunction
     }
 };
 
+// Get a single device by ID
 export const getDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!isValidObjectId(req.params.id)) {
@@ -61,30 +58,39 @@ export const getDevice = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-export const createDevice = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        handleValidationErrors(req, res, next);  // Handle validation
-        const newDevice = new Device(req.body);
-        await newDevice.save();
-        res.status(201).json(newDevice);
-    } catch (error) {
-        next(error); // Pass error to the error middleware
-    }
-};
-
-export const updateDevice = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        handleValidationErrors(req, res, next);  // Handle validation
-        const device = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!device) {
-            return res.status(404).json({ message: 'Device not found' });
+// Create a new device
+export const createDevice = [
+    ...validateDevice,
+    handleValidationErrors,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const newDevice = new Device(req.body);
+            await newDevice.save();
+            res.status(201).json(newDevice);
+        } catch (error) {
+            next(error); // Pass error to the error middleware
         }
-        res.json(device);
-    } catch (error) {
-        next(error); // Pass error to the error middleware
     }
-};
+];
 
+// Update an existing device
+export const updateDevice = [
+    ...validateDeviceUpdate,
+    handleValidationErrors,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const device = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!device) {
+                return res.status(404).json({ message: 'Device not found' });
+            }
+            res.json(device);
+        } catch (error) {
+            next(error); // Pass error to the error middleware
+        }
+    }
+];
+
+// Delete a device
 export const deleteDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!isValidObjectId(req.params.id)) {
@@ -100,57 +106,106 @@ export const deleteDevice = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-export const controlDevice = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid device ID format' });
-        }
-        const device = await Device.findById(req.params.id);
-        if (!device) {
-            return res.status(404).json({ message: 'Device not found' });
-        }
-        device.status = req.body.status;
-        await device.save();
-        res.json({ message: 'Device status updated', device });
-    } catch (error) {
-        next(error); // Pass error to the error middleware
-    }
-};
+// Combined controlDevice function with validation and action control
+export const controlDevice = [
+  // Validation for control device
+  body('status')
+    .optional()
+    .isIn(['on', 'off', 'locked', 'Dim', 'unlocked', 'busy', 'Decreasing Temperature', 'Increasing Temperature'])
+    .withMessage('Invalid status'),
 
-export const turnOnDevice = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid device ID format' });
-        }
-        const device = await Device.findById(req.params.id);
-        if (!device) {
-            return res.status(404).json({ message: 'Device not found' });
-        }
-        device.status = 'on';
-        await device.save();
-        res.json({ message: 'Device turned on', device });
-    } catch (error) {
-        next(error); // Pass error to the error middleware
-    }
-};
+  body('action')
+    .optional()
+    .isIn(['Turn On', 'Turn Off', 'Dim', 'lock', 'unlock', 'open', 'close', 'IncreaseTemp', 'DecreaseTemp'])
+    .withMessage('Invalid action'),
 
-export const turnOffDevice = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid device ID format' });
-        }
-        const device = await Device.findById(req.params.id);
-        if (!device) {
-            return res.status(404).json({ message: 'Device not found' });
-        }
-        device.status = 'off';
-        await device.save();
-        res.json({ message: 'Device turned off', device });
-    } catch (error) {
-        next(error); // Pass error to the error middleware
-    }
-};
+  body('command')
+    .optional()
+    .isIn(['increase_temperature', 'decrease_temperature', 'moon_light'])
+    .withMessage('Invalid command'),
 
+  handleValidationErrors,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Invalid device ID format' });
+      }
+
+      const { status, action, command } = req.body;
+      const device = await Device.findById(req.params.id);
+
+      if (!device) {
+        return res.status(404).json({ message: 'Device not found' });
+      }
+
+      const deviceConfig = deviceActionsConfig[device.type];
+
+      if (!deviceConfig) {
+        return res.status(400).json({ message: 'Unsupported device type' });
+      }
+
+      // Validate action or command
+      if (action && !deviceConfig.actions.includes(action)) {
+        return res.status(400).json({ message: `Invalid action for ${device.type}` });
+      }
+      if (command && command !== deviceConfig.defaultCommand) {
+        return res.status(400).json({ message: `Invalid command for ${device.type}` });
+      }
+
+      // Update status and handle specific device actions
+      device.status = status;
+
+      switch (device.type) {
+        case 'light':
+          if (action === 'Dim') {
+            device.brightness = req.body.value || 50; // Default brightness value if not provided
+          }
+          break;
+
+        case 'ac':
+          if (action === 'Turn On') {
+            device.status = 'on';
+          } else if (action === 'Turn Off') {
+            device.status = 'off';
+          } else if (action === 'IncreaseTemp') {
+            device.temperature = (device.temperature || 20) + (req.body.value || 1);
+          } else if (action === 'DecreaseTemp') {
+            device.temperature = (device.temperature || 20) - (req.body.value || 1);
+          } else if (action === 'Fan') {
+            device.fan = true; // Assume fan is a boolean or similar
+          }
+          break;
+
+        case 'moon_light':
+          // Specific logic for moon_light device
+          if (command === 'moon_light') {
+            // Custom moon_light behavior if needed
+          }
+          break;
+
+        case 'refrigerator':
+          if (action === 'Turn On') {
+            device.status = 'on';
+          } else if (action === 'Turn Off') {
+            device.status = 'off';
+          }
+          break;
+
+        default:
+          // For devices with no specific action, apply default behavior
+          break;
+      }
+
+      await device.save();
+      res.json({ message: `Device ${device.type} updated`, device });
+    } catch (error) {
+      next(error); // Pass error to the error middleware
+    }
+  }
+];
+
+
+// Set custom device state (e.g., temperature, brightness)
 export const setDeviceState = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!isValidObjectId(req.params.id)) {

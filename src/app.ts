@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import connectDB from './config';
 import deviceRoutes from './routes/deviceRoutes';
 import userRoutes from './routes/userRoutes'; // Import user routes for authentication
@@ -15,6 +16,12 @@ import errorMiddleware from './middleware/errorMiddleware'; // Import error midd
 dotenv.config();
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3001',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -39,7 +46,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 app.use('/api/devices', authenticateJWT, deviceRoutes);  // Apply authentication to device routes
 app.use('/api/users', userRoutes);  // Public routes for registration and login
 app.use('/api/automation-rules', authenticateJWT, automationRoutes); // Add automation rules routes
-app.use('/api/devices/camera', cameraRoutes);
+app.use('/api/camera', cameraRoutes);
 app.use('/api/tv', authenticateJWT, tvRoutes); // Add TV routes
 app.use('/api/smart-door', authenticateJWT, smartDoorRoutes);
 app.use('/api/weather', weatherRoutes);

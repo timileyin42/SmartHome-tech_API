@@ -5,22 +5,47 @@ import * as Joi from 'joi';
 const deviceSchema = Joi.object({
   name: Joi.string().required(),
   type: Joi.string().required(),
+  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy', 'Decreasing Temperature', 'Increasing Temperature').optional(),
 });
 
 const controlDeviceStatusSchema = Joi.object({
-  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy').required(),
-  action: Joi.string().valid('lock', 'unlock', 'open', 'close').optional(), // Include valid actions for smart doors
+  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy', 'Decreasing Temperature', 'Increasing Temperature').required(),
+  action: Joi.string().valid('lock', 'unlock', 'open', 'close', 'Dim', 'IncreasTemp', 'DecreaseTemp').optional(), // Include valid actions for smart doors
 
 });
 
 // Schema for control device validation
 const controlDeviceSchema = Joi.object({
-  name: Joi.string().required(),
-  type: Joi.string().valid('light', 'ac').required(), // Adjust this based on your device types
-  status: Joi.string().valid('on', 'off', 'locked', 'unlocked', 'busy').required(),
-  action: Joi.string().valid('lock', 'unlock', 'open', 'close').optional(), // Include valid actions for smart doors
-  command: Joi.string().valid('increase_temperature', 'decrease_temperature', 'moon_light').optional(),
-  value: Joi.number().optional()
+  type: Joi.string().valid('light', 'ac', 'refrigerator', 'moon_light').required(),
+  status: Joi.string().valid('on', 'off', 'Dim', 'locked', 'unlocked', 'busy', 'Decreasing Temperature', 'Increasing Temperature').required(),
+  action: Joi.string().valid(
+    'Turn On', 'Turn Off', 'Dim', 'lock', 'unlock', 'open', 'close', 'IncreaseTemp', 'DecreaseTemp'
+  ).when('type', {
+    is: Joi.string().valid('refrigerator'),
+    then: Joi.string().valid('Turn On', 'Turn Off') // Only 'on' and 'off' for refrigerators
+  }).when('type', {
+    is: Joi.string().valid('ac'),
+    then: Joi.string().valid('on', 'off', 'IncreaseTemp', 'DecreaseTemp') // Actions for air conditioners
+  }).when('type', {
+    is: Joi.string().valid('light'),
+    then: Joi.string().valid('Turn On', 'Turn Off', 'Dim') // Actions for lights
+  }).when('type', {
+    is: Joi.string().valid('moon_light'),
+    then: Joi.string().valid('on', 'off', 'Dim') // Actions for moon light
+  }).optional(),
+  command: Joi.string().valid(
+    'increase_temperature', 'decrease_temperature', 'moon_light'
+  ).when('type', {
+    is: Joi.string().valid('refrigerator'),
+    then: Joi.forbidden() // Command is not allowed for refrigerators
+  }).when('type', {
+    is: Joi.string().valid('ac'),
+    then: Joi.string().valid('increase_temperature', 'decrease_temperature') // Commands for air conditioners
+  }).when('type', {
+    is: Joi.string().valid('moon_light'),
+    then: Joi.string().valid('moon_light') // Commands for moon light
+  }).allow('', null).optional(), // Allow empty string or null for other types
+  value: Joi.number().optional() // Allow numerical values for actions like temperature adjustment
 });
 
 // Schema for creating automation rules
@@ -43,7 +68,7 @@ const createAutomationRuleSchema = Joi.object({
 const cameraControlSchema = Joi.object({
   action: Joi.string().valid('on', 'off', 'record', 'snapshot').required(),
   duration: Joi.number().optional(), // For 'record' action, this can specify the duration
-  status: Joi.string().optional(), // Make status optional
+  status: Joi.string().valid('on', 'off').optional(), // Make status optional
 });
 
 // Schema for updating automation rules
@@ -68,7 +93,7 @@ const tvControlSchema = Joi.object({
   action: Joi.string().valid('on', 'off', 'volume_up', 'volume_down', 'change_channel').required(),
   status: Joi.string().optional(), // Make status optional for TV
   volume: Joi.number().optional(), // For volume actions
-  channel: Joi.string().optional() // For change channel action
+  channel: Joi.alternatives().try(Joi.string(), Joi.number()).optional(), // Accept both string and number
 });
 
 // Schema for smart door control validation
@@ -79,6 +104,7 @@ const smartDoorControlSchema = Joi.object({
 
 // Middleware functions
 export const validateDevice = (req: Request, res: Response, next: NextFunction) => {
+  console.log('req.body:', req.body);
   const { error } = deviceSchema.validate(req.body);
 
   if (error) {
@@ -92,6 +118,8 @@ export const validateDevice = (req: Request, res: Response, next: NextFunction) 
 };
 
 export const validateControlDevice = (req: Request, res: Response, next: NextFunction) => {
+  console.log('validateControlDevice middleware invoked');
+  console.log('req.body:', req.body);
   const { error } = controlDeviceSchema.validate(req.body);
 
   if (error) {
@@ -105,6 +133,9 @@ export const validateControlDevice = (req: Request, res: Response, next: NextFun
 };
 
 export const validateControlDeviceStatus = (req: Request, res: Response, next: NextFunction) => {
+  action: Joi.string().valid('Turn On', 'Turn Off', 'Dim', 'Increasing Temperature', 'DecreasingTemperature').required(),
+
+  console.log('req.body:', req.body);
   console.log("validateControlDeviceStatus middleware invoked");
   const { error } = controlDeviceStatusSchema.validate(req.body);
 
@@ -120,6 +151,7 @@ export const validateControlDeviceStatus = (req: Request, res: Response, next: N
 
 // Middleware for creating automation rules
 export const validateCreateAutomationRule = (req: Request, res: Response, next: NextFunction) => {
+  console.log('req.body:', req.body);
   const { error } = createAutomationRuleSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
@@ -132,6 +164,7 @@ export const validateCreateAutomationRule = (req: Request, res: Response, next: 
 
 // Middleware for updating automation rules
 export const validateUpdateAutomationRule = (req: Request, res: Response, next: NextFunction) => {
+  console.log('req.body:', req.body);
   const { error } = updateAutomationRuleSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
