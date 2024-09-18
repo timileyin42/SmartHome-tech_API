@@ -17,8 +17,11 @@ dotenv.config();
 
 const app = express();
 
+const corsOrigin = process.env.CORS_ORIGIN || 'https://smart-home-tech-api.vercel.app/';
+
+
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -53,6 +56,9 @@ app.use('/api/weather', weatherRoutes);
 
 // Use error middleware (global error handler)
 app.use(errorMiddleware);
+
+// Export the handler for Vercel
+export const handler = serverless(app);
 
 // Start script
 const PORT = process.env.PORT;
