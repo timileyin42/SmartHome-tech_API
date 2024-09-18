@@ -55,7 +55,6 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-content">
         {activeTab === 'weather' && (
           <div className="tab-dropdown">
-            <img src="/images/smart door (1).png" alt="Weather Logo" className="weather-logo" />
             <Link to="/weather-control">Adjust Weather Settings</Link>
           </div>
         )}

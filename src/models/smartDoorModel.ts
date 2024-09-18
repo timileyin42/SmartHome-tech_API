@@ -7,7 +7,7 @@ const smartDoorSchema = new Schema({
   type: { type: String, default: 'door' },
 }, { timestamps: true });
 
-// Create a TypeScript interface for the Smart Door model
+//TypeScript interface for the Smart Door model
 export interface ISmartDoor extends Document {
   name: string;
   status: 'locked' | 'unlocked';

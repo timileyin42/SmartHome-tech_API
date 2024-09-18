@@ -11,14 +11,13 @@ import weatherRoutes from './routes/weatherRoutes';
 import smartDoorRoutes from './routes/smartDoorRoutes';
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
 import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
-import serverless from 'serverless-http';
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN || 'https://smart-home-tech-api.vercel.app/';
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3001';
 
 
 app.use(cors({
