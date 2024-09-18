@@ -12,7 +12,6 @@ The Smart Home Automation System is a full-stack application designed to control
 - [Setup Instructions](#setup-instructions)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
-- [License](#license)
 - [Acknowledgments](#acknowledgments)
 
 ## Features
@@ -62,27 +61,69 @@ SmartHome-tech_API/ ├── dist/ # Compiled backend code ├── node_modul
 ### Backend
 
 1. **Clone the repository:**
-   ```bash
-   git clone [repository-url]
 
-   **cd SmartHome-tech_API
+    ```bash
+    git clone [repository-url]
+    ```
 
-   **npm install
+2. **Navigate to the backend directory:**
 
-   Create a .env file:
+    ```bash
+    cd SmartHome-tech_API
+    ```
 
-   ```bash
-   MONGODB_URI=
-   PORT=3000
-   JWT_SECRET=<your-jwt-secret>
-   OPENWEATHERMAP_API_KEY=<your-api-key>
+3. **Install backend dependencies:**
 
-   ```bash
-   npm run build
-   npm start
+    ```bash
+    npm install
+    ```
 
-   **Frontend
-   cd SmartHome-tech_API-Frontend
+4. **Create a `.env` file:**
+
+    ```bash
+    MONGODB_URI=<your-mongodb-uri>
+    PORT=3000
+    JWT_SECRET=<your-jwt-secret>
+    OPENWEATHERMAP_API_KEY=<your-api-key>
+    ```
+
+5. **Build the backend:**
+
+    ```bash
+    npm run build
+    ```
+
+6. **Start the backend server:**
+
+    ```bash
+    npm start
+    ```
+
+### Frontend
+
+1. **Navigate to the frontend directory:**
+
+    ```bash
+    cd SmartHome-tech_API-Frontend
+    ```
+
+2. **Install frontend dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+3. **Build the frontend:**
+
+    ```bash
+    npm run build
+    ```
+
+4. **Serve the frontend locally (optional):**
+
+    ```bash
+    npm start
+    ```
    
 
    
@@ -91,4 +132,60 @@ SmartHome-tech_API/ ├── dist/ # Compiled backend code ├── node_modul
  
 SmartHome-tech_API-Frontend/ ├── public/ # Static files for frontend ├── src/ # Source code for frontend │ ├── components/ # React components │ ├── hooks/ # Custom hooks │ ├── pages/ # React pages/views │ └── App.tsx # Main React component ├── package.json # Frontend project dependencies and scripts ├── tsconfig.json # TypeScript configuration └── README.md # Project documentation
 
+
+## Deployment
+
+### Backend
+
+1. **Login to Vercel:**
+
+    ```bash
+    vercel login
+    ```
+
+2. **Deploy the backend:**
+
+    ```bash
+    vercel
+    ```
+
+3. **Configure environment variables on Vercel:**
+
+    - Go to [Vercel dashboard](https://vercel.com/dashboard)
+    - Navigate to your project settings
+    - Add environment variables matching those in your `.env` file
+
+### Frontend
+
+1. **Upload the `build` directory to your web server.**
+
+2. **Configure your web server to serve the static files from the `build` directory.**
+
+3. **Ensure CORS settings on your backend allow requests from the frontend domain.**
+
+---
+
+## Contributing
+
+1. **Fork the repository**
+
+2. **Create a feature branch**
+
+3. **Commit your changes**
+
+4. **Push to the branch**
+
+5. **Create a pull request**
+
+
+## Acknowledgments
+
+Special thanks to:
+- [Your mentors, contributors, or any libraries/tools you used]
+
+Libraries and Tools:
+- [typeScript
+   joi
+   JWT
+   Bycrypt]
 
