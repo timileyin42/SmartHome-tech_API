@@ -27,7 +27,7 @@ const Login: React.FC = () => {
     try {
       // Make a POST request to login endpoint
       const response = await axios.post<LoginResponse>(
-        'http://localhost:3000/api/users/login',
+        'https://smart-home-tech-api.vercel.app/api/users/login',
         { username, password },
         { headers: { 'Content-Type': 'application/json' } }
       );

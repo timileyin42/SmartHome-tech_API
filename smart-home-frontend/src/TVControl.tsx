@@ -31,7 +31,7 @@ const TVControl: React.FC = () => {
 
       console.log('Payload:', payload); // Debug to see the payload structure before sending the request
       const response = await axios.post<TVControlResponse>(
-        'http://localhost:3000/api/tv/control',
+        'https://smart-home-tech-api.vercel.app/api/tv/control',
         payload,
         {
           headers: {

@@ -21,7 +21,7 @@ const SmartDoor: React.FC = () => {
 
     try {
       const response = await axios.post<DoorControlResponse>(
-        'http://localhost:3000/api/smart-door/control',
+        'https://smart-home-tech-api.vercel.app/api/smart-door/control',
         { action, status }, // Include status in the payload
         {
           headers: {

@@ -22,7 +22,7 @@ const WeatherControl: React.FC = () => {
 
     try {
       const response = await axios.post<WeatherControlResponse>(
-        'http://localhost:3000/api/weather/adjust-weather',
+        'https://smart-home-tech-api.vercel.app/api/weather/adjust-weather',
         { location },
         {
           headers: {

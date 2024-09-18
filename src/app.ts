@@ -11,6 +11,7 @@ import weatherRoutes from './routes/weatherRoutes';
 import smartDoorRoutes from './routes/smartDoorRoutes';
 import authenticateJWT from './middleware/authMiddleware'; // Import JWT authentication middleware
 import errorMiddleware from './middleware/errorMiddleware'; // Import error middleware
+import serverless from 'serverless-http';
 
 // Load environment variables from .env file
 dotenv.config();

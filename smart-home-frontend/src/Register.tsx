@@ -26,7 +26,7 @@ const Register: React.FC = () => {
     try {
       // Make a POST request to registration endpoint
       const response = await axios.post<RegisterResponse>(
-        'http://localhost:3000/api/users/register',
+        'https://smart-home-tech-api.vercel.app/api/users/register',
         { username, password },
         { headers: { 'Content-Type': 'application/json' } }
       );

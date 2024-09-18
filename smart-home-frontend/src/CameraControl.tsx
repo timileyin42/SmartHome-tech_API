@@ -13,7 +13,7 @@ const CameraControl: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post<{ message: string }>(
-        'http://localhost:3000/api/camera/control', // Updated endpoint
+        'https://smart-home-tech-api.vercel.app/api/camera/control', // Updated endpoint
         {
           action,
           duration: action === 'record' ? duration : undefined, // Only send duration for 'record' action

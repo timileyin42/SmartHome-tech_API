@@ -89,7 +89,7 @@ const DeviceControl: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`http://localhost:3000/api/devices/${deviceId}`, {
+      await axios.delete(`https://smart-home-tech-api.vercel.app/api/devices/${deviceId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
