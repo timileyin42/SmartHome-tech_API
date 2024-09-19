@@ -180,9 +180,6 @@ SmartHome-tech_API-Frontend/ ├── public/ # Static files for frontend ├�
 
 ## Acknowledgments
 
-Special thanks to:
-- [Your mentors, contributors, or any libraries/tools you used]
-
 Libraries and Tools:
 - [typeScript
    joi
