@@ -1,6 +1,6 @@
 // src/controllers/automationController.ts
 import { Request, Response, NextFunction } from 'express';
-import AutomationRule from '../models/AutomationRule'; // Adjust the import path as necessary
+import AutomationRule from '../models/AutomationRule';
 
 // Create an automation rule
 export const createAutomationRule = async (req: Request, res: Response, next: NextFunction) => {
