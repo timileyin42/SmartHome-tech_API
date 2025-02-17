@@ -1,6 +1,6 @@
 # ignore this files
 myenv/
-node_modules
+node_modules/
 dist/
 .env
 /venv
